@@ -1,1 +1,27 @@
-from sqlalchemy import Column, String, Integer, DateTime, Boolean\nfrom sqlalchemy.ext.declarative import declarative_base\nfrom datetime import datetime\n\nBase = declarative_base()\n\nclass User(Base):\n    __tablename__ = 'users'\n\n    id = Column(Integer, primary_key=True, autoincrement=True)\n    username = Column(String(50), unique=True, nullable=False)\n    email = Column(String(100), unique=True, nullable=False)\n    full_name = Column(String(100), nullable=True)\n    phone = Column(String(15), nullable=True)\n    password_hash = Column(String(128), nullable=False)\n    language_preference = Column(String(10), nullable=True)\n    is_active = Column(Boolean, default=True)\n    is_verified = Column(Boolean, default=False)\n    created_at = Column(DateTime, default=datetime.utcnow)\n    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)\n    last_login = Column(DateTime, nullable=True)\n
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy.orm import relationship
+from datetime import datetime
+from app.database import Base
+import uuid
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, unique=True, index=True, default=lambda: str(uuid.uuid4()))
+    email = Column(String, unique=True, index=True)
+    username = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    full_name = Column(String, nullable=True)
+    language = Column(String, default="en")  # Default language
+    is_active = Column(Boolean, default=True)
+    is_verified = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_login = Column(DateTime, nullable=True)
+
+    # Relationships
+    conversations = relationship("Conversation", back_populates="user", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<User(user_id={self.user_id}, email={self.email})>"
